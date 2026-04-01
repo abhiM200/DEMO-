@@ -1,0 +1,6 @@
+DATABASE_URL=postgresql://postgres:password@localhost:5432/outspark_db
+SECRET_KEY=your-super-secret-key-change-this-in-production-min-32-chars
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=10080
+ADMIN_EMAIL=admin@outspark.com
+ADMIN_PASSWORD=admin@123
