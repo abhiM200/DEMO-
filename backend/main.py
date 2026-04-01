@@ -36,7 +36,7 @@ app.add_middleware(
 )
 
 # ✅ Routers Integration
-app.include_router(users.router)
+app.include_router(users.router, prefix="/api/users") 
 app.include_router(admin.router)
 app.include_router(payments.router)
 
