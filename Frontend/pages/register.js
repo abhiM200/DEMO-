@@ -16,13 +16,28 @@ export default function Register() {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    // 🕵️‍♂️ Debugging: Dekhte hain kya data ja raha hai
+    console.log("🚀 Attempting registration with:", form);
+
     try {
       const res = await register(form);
+      console.log("✅ Server Response:", res.data);
+
       localStorage.setItem("token", res.data.access_token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.detail || "Registration failed. Please try again.");
+      // 🔴 Yaha asli error dikhega console mein
+      console.error("❌ Registration Error Details:", err.response);
+
+      // Agar backend se proper message aa raha hai toh wo dikhao, warna default
+      const errorMsg = err.response?.data?.detail;
+      if (Array.isArray(errorMsg)) {
+        setError(errorMsg[0].msg); // Validation errors ke liye
+      } else {
+        setError(errorMsg || "Registration failed. Please check your internet or API path.");
+      }
     } finally {
       setLoading(false);
     }
@@ -103,9 +118,6 @@ export default function Register() {
           <p className="text-center text-sm text-gray-500 mt-6">
             Already have an account?{" "}
             <Link href="/login" className="text-blue-600 font-medium hover:underline">Login</Link>
-          </p>
-          <p className="text-center text-xs text-gray-400 mt-3">
-            🔒 Your data is 100% secure and confidential
           </p>
         </div>
       </div>
