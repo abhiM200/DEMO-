@@ -16,17 +16,18 @@ SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production-use-long-random-st
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10080))
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ✅ bcrypt hata diya, argon2 use ho raha hai
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+
 bearer_scheme = HTTPBearer()
 
 
-# ✅ FIXED (72 bytes limit handle)
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password.encode("utf-8")[:72])
+    return pwd_context.hash(password)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain.encode("utf-8")[:72], hashed)
+    return pwd_context.verify(plain, hashed)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
