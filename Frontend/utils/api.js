@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// ✅ Direct backend URL (no localhost issue)
+const API_BASE = "https://demo-jy2r.onrender.com";
 
 const api = axios.create({ baseURL: API_BASE });
 
@@ -13,23 +14,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auth
-export const register = (data) => api.post("/api/users/register", data);
-export const login = (data) => api.post("/api/users/login", data);
-export const getMe = () => api.get("/api/users/me");
-export const getMyReviews = () => api.get("/api/users/my-reviews");
-export const getMyPayments = () => api.get("/api/users/my-payments");
+// ✅ Removed /api क्योंकि backend me nahi hai
+export const register = (data) => api.post("/users/register", data);
+export const login = (data) => api.post("/users/login", data);
+export const getMe = () => api.get("/users/me");
+export const getMyReviews = () => api.get("/users/my-reviews");
+export const getMyPayments = () => api.get("/users/my-payments");
 
-// Payment (bypassed)
-export const checkout = (data) => api.post("/api/payments/checkout", data);
-export const getPaymentStatus = () => api.get("/api/payments/status");
+// Payment
+export const checkout = (data) => api.post("/payments/checkout", data);
+export const getPaymentStatus = () => api.get("/payments/status");
 
 // Admin
-export const getAdminDashboard = () => api.get("/api/admin/dashboard");
-export const getAdminUsers = () => api.get("/api/admin/users");
-export const deleteUser = (id) => api.delete(`/api/admin/users/${id}`);
-export const getAdminReviews = () => api.get("/api/admin/reviews");
-export const updateReview = (id, data) => api.put(`/api/admin/reviews/${id}`, data);
-export const getAdminPayments = () => api.get("/api/admin/payments");
+export const getAdminDashboard = () => api.get("/admin/dashboard");
+export const getAdminUsers = () => api.get("/admin/users");
+export const deleteUser = (id) => api.delete(`/admin/users/${id}`);
+export const getAdminReviews = () => api.get("/admin/reviews");
+export const updateReview = (id, data) => api.put(`/admin/reviews/${id}`, data);
+export const getAdminPayments = () => api.get("/admin/payments");
 
 export default api;
