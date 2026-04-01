@@ -20,12 +20,13 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer_scheme = HTTPBearer()
 
 
+# ✅ FIXED (72 bytes limit handle)
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return pwd_context.hash(password.encode("utf-8")[:72])
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return pwd_context.verify(plain.encode("utf-8")[:72], hashed)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
