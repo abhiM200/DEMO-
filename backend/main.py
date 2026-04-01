@@ -36,9 +36,10 @@ app.add_middleware(
 )
 
 # ✅ Routers Integration
-app.include_router(users.router, prefix="/api/users") 
-app.include_router(admin.router)
-app.include_router(payments.router)
+# main.py mein routers section update karo
+app.include_router(users.router, prefix="/api/users", tags=["Users"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
 
 @app.get("/")
 def root():
