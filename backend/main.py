@@ -11,7 +11,7 @@ import models
 import auth
 from routers import users, admin, payments
 
-
+# Database tables create karna (Auto-migration)
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -20,22 +20,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
+# ✅ CORS Fix: Added Wildcard and Vercel Subdomains support
 origins = [
     "http://localhost:3000",
-    "https://demo-lr5d.vercel.app", 
+    "https://demo-lr5d.vercel.app",
+    "https://demo-lr5d-git-main-abhim200.vercel.app", # Vercel preview branch support
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"], # 🔥 Easy Way: Production tak ke liye isse '*' rakho 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ✅ Routers Integration
-
 app.include_router(users.router)
 app.include_router(admin.router)
 app.include_router(payments.router)
@@ -48,10 +48,9 @@ def root():
         "docs": "/docs"
     }
 
-# ✅ Startup Event: Default Admin Create 
+# ✅ Startup Event: Default Admin Create Karna safely
 @app.on_event("startup")
 def seed_admin():
-    """Create default admin on first run safely."""
     db = SessionLocal()
     try:
         admin_email = os.getenv("ADMIN_EMAIL", "admin@outspark.com")
@@ -61,7 +60,7 @@ def seed_admin():
         existing_admin = db.query(models.User).filter(models.User.email == admin_email).first()
         
         if not existing_admin:
-            # auth.py handles argon2 hashing
+            # argon2 hashing using your auth.py
             hashed_pw = auth.hash_password(admin_password)
             
             new_admin = models.User(
@@ -85,6 +84,6 @@ def seed_admin():
 
 if __name__ == "__main__":
     import uvicorn
-    # Render automatically sets the PORT environment variable
+    # Render sets PORT env variable automatically
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
