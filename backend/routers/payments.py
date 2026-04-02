@@ -1,58 +1,48 @@
-import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-import models, schemas, auth
+import models, auth
+from pydantic import BaseModel
 
-router = APIRouter(prefix="/api/payments", tags=["Payments"])
+router = APIRouter(prefix="/api/payments")
 
+class CheckoutRequest(BaseModel):
+    linkedin_url: str = ""
+    notes: str = ""
 
-@router.post("/checkout", response_model=schemas.PaymentOut)
+@router.post("/checkout")
 def checkout(
-    payload: schemas.PaymentCreate,
+    data: CheckoutRequest,
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Payment bypass — instantly marks payment as completed.
-    Replace this with Razorpay / Stripe in production.
-    """
-    # Check if user already paid
+    # Check already paid
     existing = db.query(models.Payment).filter(
-        models.Payment.user_id == current_user.id,
-        models.Payment.status == "completed"
+        models.Payment.user_id == current_user.id
     ).first()
     if existing:
-        return existing
+        return {"message": "Already paid", "payment": existing}
 
+    # Create payment (bypassed)
     payment = models.Payment(
         user_id=current_user.id,
-        user_email=current_user.email,
-        user_name=current_user.name,
-        amount=999.0,
-        currency="INR",
+        amount=999,
         status="completed",
-        plan=payload.plan,
-        linkedin_url=payload.linkedin_url,
-        transaction_id=f"TXN-{uuid.uuid4().hex[:12].upper()}",
+        transaction_id=f"BYPASS_{current_user.id}"
     )
     db.add(payment)
 
-    # Also auto-create a profile review
+    # Create review
     review = models.ProfileReview(
         user_id=current_user.id,
-        user_email=current_user.email,
-        linkedin_url=payload.linkedin_url,
-        status="pending",
+        linkedin_url=data.linkedin_url or current_user.linkedin_url or "",
+        status="pending"
     )
     db.add(review)
-
-    # Update user's linkedin_url
-    current_user.linkedin_url = payload.linkedin_url
     db.commit()
     db.refresh(payment)
-    return payment
 
+    return {"message": "Payment successful", "payment": payment}
 
 @router.get("/status")
 def payment_status(
@@ -62,6 +52,4 @@ def payment_status(
     payment = db.query(models.Payment).filter(
         models.Payment.user_id == current_user.id
     ).first()
-    if not payment:
-        return {"paid": False}
-    return {"paid": True, "payment": payment}
+    return {"paid": payment is not None, "payment": payment}
