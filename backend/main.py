@@ -10,20 +10,18 @@ import models
 import auth
 from routers import users, admin, payments
 
-# Create all tables
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="OutSpark API")
 
-# CORS
- app.add_middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# ✅ Routers — NO prefix here (prefix already inside each router file)
+
 app.include_router(users.router)
 app.include_router(admin.router)
 app.include_router(payments.router)
@@ -52,5 +50,11 @@ def seed_admin():
             db.add(admin_user)
             db.commit()
             print(f"✅ Admin created: {admin_email}")
+        else:
+            existing.is_admin = True
+            existing.is_active = True
+            existing.hashed_password = auth.hash_password(admin_password)
+            db.commit()
+            print(f"✅ Admin updated: {admin_email}")
     finally:
         db.close()
