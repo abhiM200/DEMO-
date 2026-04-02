@@ -50,11 +50,6 @@ export default function Login() {
             </div>
           )}
 
-          {/* Admin hint */}
-          <div className="bg-blue-50 border border-blue-100 text-blue-700 text-xs rounded-xl px-4 py-3 mb-4">
-            <strong>Admin Login:</strong> admin@outspark.com / admin@123
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
