@@ -41,8 +41,8 @@ def root():
 def seed_admin():
     db = SessionLocal()
     try:
-        admin_email = os.getenv("ADMIN_EMAIL", "admin@outspark.com")
-        admin_password = os.getenv("ADMIN_PASSWORD", "admin@123")
+        admin_email = os.getenv("ADMIN_EMAIL", "superadmin@outspark.com")
+        admin_password = os.getenv("ADMIN_PASSWORD", "Admin@2025")
         existing = db.query(models.User).filter(
             models.User.email == admin_email
         ).first()
