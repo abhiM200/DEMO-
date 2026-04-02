@@ -16,14 +16,13 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(title="OutSpark API")
 
 # CORS
-app.add_middleware(
+ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # ✅ Routers — NO prefix here (prefix already inside each router file)
 app.include_router(users.router)
 app.include_router(admin.router)
