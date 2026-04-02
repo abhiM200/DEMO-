@@ -1,33 +1,30 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from database import get_db
-import models, schemas, auth
+@app.on_event("startup")
+def seed_admin():
+    db = SessionLocal()
+    try:
+        admin_email = os.getenv("ADMIN_EMAIL", "admin@outspark.com")
+        admin_password = os.getenv("ADMIN_PASSWORD", "admin@123")
+        existing = db.query(models.User).filter(
+            models.User.email == admin_email
+        ).first()
+        if not existing:
+            admin_user = models.User(
+                name="Admin",
+                email=admin_email,
+                hashed_password=auth.hash_password(admin_password),
+                is_admin=True,
+                is_active=True,
+            )
+            db.add(admin_user)
+            db.commit()
+            print(f"✅ Admin created: {admin_email}")
+        else:
+            existing.is_admin = True
+            existing.is_active = True
+            existing.hashed_password = auth.hash_password(admin_password)
+            db.commit()
+            print(f"✅ Admin updated: {admin_email}")
+    finally:
+        db.close()
+```
 
-router = APIRouter() 
-@router.post("/register", response_model=schemas.UserOut)
-def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    hashed_pw = auth.hash_password(user.password)
-    new_user = models.User(
-        name=user.name,
-        email=user.email,
-        hashed_password=hashed_pw,
-        phone=user.phone,
-        linkedin_url=user.linkedin_url
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
-
-@router.post("/login")
-def login_user(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == user_credentials.email).first()
-    if not user or not auth.verify_password(user_credentials.password, user.hashed_password):
-        raise HTTPException(status_code=403, detail="Invalid Credentials")
-    
-    access_token = auth.create_access_token(data={"sub": str(user.id)})
-    return {"access_token": access_token, "token_type": "bearer", "user": user}
