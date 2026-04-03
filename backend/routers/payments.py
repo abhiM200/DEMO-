@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import get_db
 import models, auth
@@ -16,14 +16,12 @@ def checkout(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Check already paid
     existing = db.query(models.Payment).filter(
         models.Payment.user_id == current_user.id
     ).first()
     if existing:
         return {"message": "Already paid", "payment": existing}
 
-    # Create payment (bypassed)
     payment = models.Payment(
         user_id=current_user.id,
         amount=999,
@@ -32,7 +30,6 @@ def checkout(
     )
     db.add(payment)
 
-    # Create review
     review = models.ProfileReview(
         user_id=current_user.id,
         linkedin_url=data.linkedin_url or current_user.linkedin_url or "",
@@ -41,7 +38,6 @@ def checkout(
     db.add(review)
     db.commit()
     db.refresh(payment)
-
     return {"message": "Payment successful", "payment": payment}
 
 @router.get("/status")
